@@ -20,8 +20,8 @@ public class PostController {
     }
 
     @PostMapping("/create")
-    public Post createPost(@RequestBody Post post, @RequestParam String tagsString){
-        return postService.createPost(post, tagsString);
+    public Post createPost(@RequestBody Post post, @RequestParam String tagsString, @RequestHeader("X-User-Email") String email){
+        return postService.createPost(post, tagsString,email);
     }
 
     @GetMapping("/all")

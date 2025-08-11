@@ -30,12 +30,18 @@ public class PostService {
     }
 
 
-    public Post createPost(Post post, String tagsString) {
+    public Post createPost(Post post, String tagsString,String loggedInEmail) {
+        if (loggedInEmail == null || loggedInEmail.isBlank()) {
+            throw new RuntimeException("Username header missing");
+        }
+
+        UserResponse user = userClient.getUserByEmail(loggedInEmail);
+        post.setAuthor(user.getUsername());
 
         post.setTitle(post.getTitle());
         post.setExcerpt(post.getExcerpt());
         post.setContent(post.getContent());
-        post.setAuthor(post.getAuthor());
+//        post.setAuthor(post.getAuthor());
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
