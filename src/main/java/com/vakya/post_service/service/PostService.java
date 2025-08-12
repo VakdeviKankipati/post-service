@@ -41,7 +41,6 @@ public class PostService {
         post.setTitle(post.getTitle());
         post.setExcerpt(post.getExcerpt());
         post.setContent(post.getContent());
-//        post.setAuthor(post.getAuthor());
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -68,7 +67,9 @@ public class PostService {
 
         }
         post.setTagList(tags);
-        return postRepository.save(post);
+        Post saved = postRepository.save(post);
+        userClient.addPostIdToUser(user.getId(), saved.getId());
+        return saved;
     }
 
     public Post getPostById(Long id) {
