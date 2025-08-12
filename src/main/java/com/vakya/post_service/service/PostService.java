@@ -30,13 +30,13 @@ public class PostService {
     }
 
 
-    public Post createPost(Post post, String tagsString,String loggedInEmail) {
-        if (loggedInEmail == null || loggedInEmail.isBlank()) {
+    public Post createPost(Post post, String tagsString,String loggedInName) {
+        if (loggedInName == null || loggedInName.isBlank()) {
             throw new RuntimeException("Username header missing");
         }
 
-        UserResponse user = userClient.getUserByEmail(loggedInEmail);
-        post.setAuthor(user.getUsername());
+        UserResponse user = userClient.getUserByName(loggedInName);
+        post.setAuthor(user.getName());
 
         post.setTitle(post.getTitle());
         post.setExcerpt(post.getExcerpt());
