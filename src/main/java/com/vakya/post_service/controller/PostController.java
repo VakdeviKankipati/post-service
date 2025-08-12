@@ -1,7 +1,9 @@
 package com.vakya.post_service.controller;
 
+import com.vakya.post_service.feign.UserClient;
 import com.vakya.post_service.model.Post;
 import com.vakya.post_service.service.PostService;
+import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -14,20 +16,37 @@ import java.util.List;
 @RestController
 public class PostController {
     private final PostService postService;
+    private final UserClient userClient;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, UserClient userClient) {
         this.postService = postService;
+        this.userClient = userClient;
     }
 
+
 //    @PostMapping("/create")
-//    public Post createPost(@RequestBody Post post, @RequestParam String tagsString, @RequestHeader("X-User-Email") String email){
-//        return postService.createPost(post, tagsString,email);
+//    public Post createPost(@RequestBody Post post, @RequestParam String tagsString, @RequestHeader("X-User-Name") String name){
+//        return postService.createPost(post, tagsString,name);
 //    }
 
     @PostMapping("/create")
-    public Post createPost(@RequestBody Post post, @RequestParam String tagsString, @RequestHeader("X-User-Name") String name){
-        return postService.createPost(post, tagsString,name);
+    public Post createPost(@RequestBody Post post,
+                           @RequestParam String tagsString,
+                           @RequestHeader("Authorization") String token) {
+
+        // Validate token via User Service
+        String username;
+        try {
+            String header = token != null && token.startsWith("Bearer ") ? token : ("Bearer " + token);
+            username = userClient.validateToken(header);
+        } catch (FeignException.Unauthorized e) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+
+        // Create post with validated username
+        return postService.createPost(post, tagsString, username);
     }
+
 
     @GetMapping("/all")
     public Page<Post> getAllPosts(@RequestParam(defaultValue = "0") int page,
