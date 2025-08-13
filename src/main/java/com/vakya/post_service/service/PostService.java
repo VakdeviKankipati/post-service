@@ -72,7 +72,8 @@ public class PostService {
     }
 
     public Post getPostById(Long id) {
-        return postRepository.findByIdIs(id);
+        return postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post with ID " + id + " not found"));
     }
 
     public Page<Post> getFilteredPosts(int page, int size, String sortDir,
@@ -165,4 +166,23 @@ public class PostService {
             throw new RuntimeException("You are not authorized to modify this post");
         }
     }
+
+    public void addCommentIdToPost(Long postId, Long commentId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (post.getCommentId() == null) {
+            post.setCommentId(new ArrayList<>());
+        }
+        post.getCommentId().add(commentId);
+        postRepository.save(post);
+    }
+
+    public List<String> getAllAuthors() {
+        return postRepository.findDistinctAuthors();
+    }
+
+    public List<String> getAllTags() {
+        return postRepository.findDistinctTagNames();
+    }
+
 }

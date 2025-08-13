@@ -41,6 +41,9 @@ public class Post{
     )
     private List<Tag> tagList = new ArrayList<>();
 
+    @ElementCollection
+    private List<Long> commentId;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

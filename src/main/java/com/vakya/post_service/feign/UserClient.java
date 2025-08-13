@@ -18,7 +18,5 @@ public interface UserClient {
 
     @GetMapping("/users/validate-token")
     String validateToken(@RequestHeader("Authorization") String token);
-
-
 }
 

@@ -38,8 +38,8 @@ public class PostController {
     }
 
 
-    @GetMapping("/all")
-    public Page<Post> getAllPosts(@RequestParam(defaultValue = "0") int page,
+    @GetMapping("/api/posts/all")
+    public Page<Post> getAllPostsApi(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "desc") String sortDir,
                                          @RequestParam(required = false) String query,
                                          @RequestParam(required = false) List<String> author,
@@ -92,5 +92,8 @@ public class PostController {
         return ResponseEntity.ok("Post deleted");
     }
 
-
+    @PostMapping("/posts/{postId}/add-comment/{commentId}")
+    public void addCommentToPost(@PathVariable Long postId, @PathVariable Long commentId) {
+        postService.addCommentIdToPost(postId, commentId);
+    }
 }
