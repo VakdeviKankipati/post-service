@@ -6,7 +6,6 @@ import com.vakya.post_service.model.Post;
 import com.vakya.post_service.model.Tag;
 import com.vakya.post_service.repository.PostRepository;
 import com.vakya.post_service.repository.TagRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -155,6 +154,15 @@ public class PostService {
             post.getTagList().clear();
             postRepository.save(post);
             postRepository.delete(post);
+        }
+    }
+
+    public void verifyOwnership(Long id, String username) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post not found with id: " + id));
+
+        if (!post.getAuthor().equals(username)) {
+            throw new RuntimeException("You are not authorized to modify this post");
         }
     }
 }

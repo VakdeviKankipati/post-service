@@ -4,7 +4,6 @@ import com.vakya.post_service.feign.UserClient;
 import com.vakya.post_service.model.Post;
 import com.vakya.post_service.service.PostService;
 import feign.FeignException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,18 +22,10 @@ public class PostController {
         this.userClient = userClient;
     }
 
-
-//    @PostMapping("/create")
-//    public Post createPost(@RequestBody Post post, @RequestParam String tagsString, @RequestHeader("X-User-Name") String name){
-//        return postService.createPost(post, tagsString,name);
-//    }
-
     @PostMapping("/create")
     public Post createPost(@RequestBody Post post,
                            @RequestParam String tagsString,
                            @RequestHeader("Authorization") String token) {
-
-        // Validate token via User Service
         String username;
         try {
             String header = token != null && token.startsWith("Bearer ") ? token : ("Bearer " + token);
@@ -43,7 +34,6 @@ public class PostController {
             throw new RuntimeException("Invalid or expired token");
         }
 
-        // Create post with validated username
         return postService.createPost(post, tagsString, username);
     }
 
@@ -64,10 +54,17 @@ public class PostController {
     }
 
     @PutMapping("update/{id}")
-    public Post updatePost(
-            @PathVariable("id") Long id,
-            @RequestBody Post updatedPost,
-            @RequestParam(required = false) String tagsInput) {
+    public Post updatePost(@PathVariable("id") Long id, @RequestBody Post updatedPost,
+                           @RequestParam(required = false) String tagsInput,
+                           @RequestHeader("Authorization") String token) {
+        String username;
+        try {
+            String header = token != null && token.startsWith("Bearer ") ? token : ("Bearer " + token);
+            username = userClient.validateToken(header);
+        } catch (FeignException.Unauthorized e) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+        postService.verifyOwnership(id, username);
 
         List<String> tags = new ArrayList<>();
         if (tagsInput != null && !tagsInput.isBlank()) {
@@ -78,9 +75,22 @@ public class PostController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity<String> deletePost(@PathVariable Long id){
+    public ResponseEntity<String> deletePost(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
+
+        String username;
+        try {
+            String header = token != null && token.startsWith("Bearer ") ? token : ("Bearer " + token);
+            username = userClient.validateToken(header);
+        } catch (FeignException.Unauthorized e) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+        postService.verifyOwnership(id, username);
+
         postService.deletePost(id);
-        return ResponseEntity.ok("post deleted");
+        return ResponseEntity.ok("Post deleted");
     }
+
 
 }
