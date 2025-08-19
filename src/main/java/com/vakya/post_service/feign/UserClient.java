@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(name = "USER-SERVICE")
+@FeignClient(name = "USER-SERVICE", url = "${USER_SERVICE_URL}")
 public interface UserClient {
 
     @GetMapping("/users/name/{name}")
