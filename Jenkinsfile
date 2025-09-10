@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-     
+        // Docker registry info
         DOCKER_REGISTRY = 'docker.io'
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials' 
-        IMAGE_NAME = 'vakdevi/post-service'            
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials' // Jenkins credentials ID
+        IMAGE_NAME = 'vakdevi/post-service'            // Docker Hub username + repo
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
@@ -24,22 +24,20 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building the project with Maven...'
-                withMaven(maven: 'myMaven') {
-                    sh 'mvn clean package -DskipTests'
-                }
+                echo 'Building project with Maven...'
+                // Use system Maven directly
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Unit Tests') {
             steps {
                 echo 'Running unit tests...'
-                withMaven(maven: 'myMaven') {
-                    sh 'mvn test'
-                }
+                sh 'mvn test'
             }
             post {
                 always {
+                    // Publish test reports
                     junit '**/target/surefire-reports/*.xml'
                 }
             }
@@ -66,7 +64,13 @@ pipeline {
             }
         }
 
-        
+        stage('Deploy (Optional)') {
+            steps {
+                echo 'Deployment step goes here (Kubernetes / Server / Helm etc.)'
+                // Example:
+                // sh 'kubectl apply -f k8s/deployment.yaml'
+            }
+        }
     }
 
     post {
