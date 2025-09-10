@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    tools {
+        maven 'myMaven'  // Use the name you configured in Global Tool Configuration
+    }
     environment {
         // Docker registry info
         DOCKER_REGISTRY = 'docker.io'
@@ -8,12 +10,10 @@ pipeline {
         IMAGE_NAME = 'vakdevi/post-service'            // Docker Hub username + repo
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
-
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 30, unit: 'MINUTES')
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -21,15 +21,12 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Build') {
             steps {
                 echo 'Building project with Maven...'
-                // Use system Maven directly
                 sh 'mvn clean package -DskipTests'
             }
         }
-
         stage('Unit Tests') {
             steps {
                 echo 'Running unit tests...'
@@ -38,11 +35,10 @@ pipeline {
             post {
                 always {
                     // Publish test reports
-                    junit '**/target/surefire-reports/*.xml'
+                    publishTestResults testResultsPattern: '**/target/surefire-reports/*.xml'
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image ${IMAGE_NAME}:${IMAGE_TAG}"
@@ -51,7 +47,6 @@ pipeline {
                 }
             }
         }
-
         stage('Push Docker Image') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
@@ -63,7 +58,6 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy (Optional)') {
             steps {
                 echo 'Deployment step goes here (Kubernetes / Server / Helm etc.)'
@@ -72,7 +66,6 @@ pipeline {
             }
         }
     }
-
     post {
         success {
             echo 'Pipeline completed successfully!'
